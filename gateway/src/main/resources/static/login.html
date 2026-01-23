@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
+</head>
+
+<body class="auth">
+<div class="site-header">
+    <img src="img/logo.png" alt="Logo PCForge" class="site-logo">
+    <h1 id="siteTitle"></h1>
+</div>
+<div class="container">
+    <h2 id="loginTitle" style="margin-top: 0">Login</h2>
+    <form id="loginForm">
+        <label for="username"></label><input type="text" id="username" placeholder="Username" required>
+        <div class="password-container">
+            <label for="password"></label><input type="password" id="password" placeholder="Password" required>
+            <i class="ph ph-eye toggle-password" style="margin-right: 4px" onclick="togglePassword('password', this)"></i>
+        </div>
+        <div class="remember-row">
+            <input type="checkbox" id="rememberMe" name="rememberMe">
+            <label for="rememberMe">Remember me</label>
+        </div>
+        <button type="submit" class="btn" style="text-align: center"><div><span>Login</span></div></button>
+    </form>
+    <p>Don't have an account? <a href="register.html">Sign in</a></p>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const token = await Auth.getValidAccessToken();
+        if (token) {
+            window.location.href = "dashboard.html";
+        }
+    });
+</script>
+<script src="js/auth.js"></script>
+<script>
+    // Password toggle
+    function togglePassword(inputId, el) {
+        const input = document.getElementById(inputId);
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+        el.classList.toggle("ph-eye");
+        el.classList.toggle("ph-eye-slash");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Typewriter per il titolo
+        const titleEl = document.getElementById("siteTitle");
+        const text = "PCForge";
+        let index = 0;
+
+        function typeWriter() {
+            if(index < text.length) {
+                titleEl.innerHTML += text.charAt(index);
+                index++;
+                setTimeout(typeWriter, 150);
+            } else {
+                titleEl.style.borderRight = "2px solid rgba(255,255,255,0.75)";
+                titleEl.style.animation = "blink 0.7s infinite";
+            }
+        }
+        typeWriter();
+
+        // Login con gestione JWT e Remember Me
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const rememberMe = document.getElementById("rememberMe").checked;
+
+            if (!username || !password) {
+                alert("Please enter username and password");
+                return;
+            }
+
+            try {
+                await Auth.login(username, password, rememberMe);
+                alert("Login successful!");
+                window.location.href = "dashboard.html";
+            } catch (err) {
+                console.error("Login error:", err);
+                alert(err.message);
+            }
+        });
+
+        // Gestione automatica del refresh token
+        async function refreshAccessToken() {
+            const refreshToken = localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken");
+            if (!refreshToken) return;
+
+            try {
+                const response = await fetch("http://172.31.6.9:8086/api/refresh", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + refreshToken
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const { accessToken } = data;
+                    const storage = localStorage.getItem("refreshToken") ? localStorage : sessionStorage;
+                    storage.setItem("accessToken", accessToken);
+                    console.log("Access token refreshed!");
+                } else {
+                    console.warn("Refresh token expired or invalid. Logging out...");
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = "login.html";
+                }
+            } catch (err) {
+                console.error("Error refreshing token:", err);
+            }
+        }
+
+        // Aggiorna automaticamente il token ogni 10 minuti
+        setInterval(refreshAccessToken, 10 * 60 * 1000);
+    });
+</script>
+</body>
+</html>

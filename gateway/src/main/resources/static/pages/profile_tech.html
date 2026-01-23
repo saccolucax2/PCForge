@@ -1,0 +1,105 @@
+<section id="profile_techPage" class="page">
+    <div class="column">
+        <div class="card">
+            <h2>Welcome, <span id="usernameLabelInline">guest</span>!</h2>
+            <button id="logoutBtnInline" class="btn" onclick="Auth.logout()"><div><span>Logout</span></div></button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 style="margin: 8px 0 8px 0;">Profile</h3>
+                <button id="editProfileBtn" class="icon-btn" title="Edit profile">
+                    <i class="ph ph-pencil"></i>
+                </button>
+            </div>
+            <form id="profileFormInline">
+                <label for="profileEmailInline"></label>
+                <input type="email" id="profileEmailInline" name="profileEmail" placeholder="Email" required readonly>
+                <label for="nameInline"></label>
+                <input type="text" id="nameInline" name="name" placeholder="Name" required readonly>
+                <label for="surnameInline"></label>
+                <input type="text" id="surnameInline" name="surname" placeholder="Surname" readonly>
+                <label for="dobInline"></label>
+                <input type="date" id="dobInline" name="dob" placeholder="Date of Birth" readonly>
+                <button type="submit" class="btn" id="saveProfileBtn" disabled>
+                    <div><span>Save Changes</span></div>
+                </button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Delete Account</h3>
+            </div>
+            <p style="margin-top: 0;">Permanently remove your account and all associated data.</p>
+            <button id="deleteAccountBtn" class="btn">
+                <div><span>Sorry to see you go :(</span></div>
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 style="margin-top: 8px;">Technician Dashboard</h3>
+                <button id="editTechBtn" class="icon-btn" title="Edit technician info">
+                    <i class="ph ph-pencil"></i>
+                </button>
+            </div>
+
+            <form id="techFormInline">
+                <div class="profile-info-row">
+                    <div class="profile-photo">
+                        <img id="techPhoto" src="/img/default-avatar.jpg" alt="Technician photo">
+                        <div class="edit-overlay">
+                            <i class="ph ph-pencil"></i>
+                        </div>
+                    </div>
+                    <div class="bio-container">
+                        <label for="bioInline" class="visually-hidden">Bio</label>
+                        <textarea id="bioInline" name="bio" placeholder="Your bio..." rows="4" readonly></textarea>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div class="skills-container">
+                    <h5>Skills</h5>
+                    <ul id="skillsListInline" class="list"></ul>
+                    <button type="button" id="addSkillBtn" class="btn">
+                        <div><span>+ Add Skill</span></div>
+                    </button>
+                </div>
+
+                <!-- Certifications -->
+                <div class="certifications-container">
+                    <h5>Certifications</h5>
+                    <ul id="certificationsListInline" class="list"></ul>
+                    <button type="button" id="addCertificationBtn" class="btn">
+                        <div><span>+ Add certification</span></div>
+                    </button>
+                </div>
+
+                <!-- Save -->
+                <button type="submit" class="btn" id="saveTechBtn" disabled>
+                    <div><span>Save Changes</span></div>
+                </button>
+            </form>
+
+            <div class="reviews-section">
+                <h5 style="margin: 0 9px 0 0;">Reviews</h5>
+                <i class="ph ph-star"></i>
+                <i class="ph ph-star"></i>
+                <i class="ph ph-star"></i>
+                <i class="ph ph-star"></i>
+                <i class="ph ph-star"></i>
+                <h4 style="margin: 0 0 0 9px;">[0]</h4>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="../js/auth.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        // Recupera username dallo storage (Remember Me o sessione)
+        // Mostra l'username nel titolo
+        document.getElementById("usernameLabelInline").textContent = localStorage.getItem("username") || sessionStorage.getItem("username");
+    });
+</script>

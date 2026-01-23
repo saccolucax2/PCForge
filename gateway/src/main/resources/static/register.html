@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign in</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
+</head>
+
+<body class="auth">
+<div class="site-header">
+    <img src="img/logo.png" alt="Logo PCForge" class="site-logo">
+    <h1 id="siteTitle"></h1>
+</div>
+<div class="container-register">
+    <h2 id="registerTitle" style="margin-top: 0">Sign in</h2>
+    <div style="height: 10px"></div>
+    <form id="registerForm" class="register-form">
+        <div class="form-grid">
+            <div class="field">
+                <label for="name" class="visually-hidden">Name</label>
+                <input type="text" id="name" placeholder="Name" required>
+            </div>
+            <div class="field">
+                <label for="surname" class="visually-hidden">Surname</label>
+                <input type="text" id="surname" placeholder="Surname" required>
+            </div>
+            <div class="field">
+                <label for="birthDate" class="visually-hidden">Date of Birth</label>
+                <input type="date" id="birthDate" placeholder="Date of Birth" required>
+            </div>
+            <div class="field">
+                <label for="username" class="visually-hidden">Username</label>
+                <input type="text" id="username" placeholder="Username" required>
+            </div>
+            <div class="field">
+                <label for="email" class="visually-hidden">Email</label>
+                <input type="email" id="email" placeholder="Email" required>
+            </div>
+            <div class="field password-field">
+                <label for="password" class="visually-hidden">Password</label>
+                <div class="password-container">
+                    <input type="password" id="password" placeholder="Password" required>
+                    <i class="ph ph-eye toggle-password" onclick="togglePassword('password', this)" aria-hidden="true"></i>
+                </div>
+            </div>
+            <div class="field full">
+                <button type="submit" class="btn" style="text-align: center"><div><span>Sign in</span></div></button>
+            </div>
+        </div>
+    </form>
+    <p>Already a member? <a href="login.html">Login</a></p>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+    // Password toggle
+    function togglePassword(inputId, el) {
+        const input = document.getElementById(inputId);
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+        el.classList.toggle("ph-eye");
+        el.classList.toggle("ph-eye-slash");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Typewriter per il titolo
+        const titleEl = document.getElementById("siteTitle");
+        const text = "PCForge";
+        let index = 0;
+
+        function typeWriter() {
+            if (index < text.length) {
+                titleEl.innerHTML += text.charAt(index);
+                index++;
+                setTimeout(typeWriter, 150);
+            } else {
+                titleEl.style.borderRight = "2px solid rgba(255,255,255,0.75)";
+                titleEl.style.animation = "blink 0.7s infinite";
+            }
+        }
+
+        typeWriter();
+
+        // Register + login automatico con token JWT
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // 1️⃣ Conversione della data in formato dd/MM/yyyy
+            const rawDate = document.getElementById("birthDate").value; // es. "2025-10-15"
+            let formattedDate = rawDate;
+            if (rawDate) {
+                const parts = rawDate.split("-");
+                if (parts.length === 3) {
+                    formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+            }
+
+            // 2️⃣ Creazione dell'oggetto user
+            const user = {
+                name: document.getElementById("name").value,
+                surname: document.getElementById("surname").value,
+                birthDate: formattedDate, // <<--- ora corretto
+                username: document.getElementById("username").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
+            };
+
+            try {
+                // Registrazione
+                const res = await Auth.register(user);
+                console.log("Registration completed:", res);
+
+                // Login automatico
+                const loginRes = await Auth.login(user.username, user.password, true);
+                console.log("Auto logging succed:", loginRes);
+
+                alert("Registration completed! Auto logging...");
+                window.location.href = "dashboard.html";
+            } catch (err) {
+                console.error("Error registering:", err);
+                alert(err.message || "Error registering.");
+            }
+        });
+    });
+</script>
+</body>
+</html>

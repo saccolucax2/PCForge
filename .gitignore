@@ -1,0 +1,15 @@
+# Cartelle di compilazione
+target/
+build/
+out/
+
+# File di sistema e IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Log e file temporanei
+*.log
+.mvn/

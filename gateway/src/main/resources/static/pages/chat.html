@@ -1,0 +1,24 @@
+<section id="chatPage" class="page">
+    <div class="card">
+        <h3>Support Chat</h3>
+
+        <!-- ✅ LISTA CHAT -->
+        <div id="chatList" class="chatList"></div>
+
+        <!-- ✅ CHAT VERA E PROPRIA -->
+        <div id="chatContainer" style="display:none;">
+            <div style="display:flex;">
+                <button id="chatBackBtn" class="icon-btn" style="margin-bottom:10px;">
+                    <i class="ph ph-caret-double-left"></i>
+                </button>
+                <button id="chatDelBtn" class="icon-btn" style="margin: 0 0 10px 10px; color: #ff6666;" >
+                    <i class="ph ph-trash"></i>
+                </button>
+            </div>
+            <div id="chatWindowInline" class="chatWindow"></div>
+            <label for="chatInputInline"></label>
+            <input id="chatInputInline" placeholder="Describe your problem...">
+            <button id="chatSendInline" class="btn"><div><span>Send</span></div></button>
+        </div>
+    </div>
+</section>

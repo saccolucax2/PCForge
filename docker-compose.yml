@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Il database MongoDB per i microservizi
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # Il tuo Gateway principale
+  gateway:
+    build: ./gateway  # Cerca il Dockerfile nella cartella gateway
+    container_name: gateway
+    ports:
+      - "8086:8086"
+    environment:
+      # Sovrascriviamo l'IP fisso che avevi nel Dockerfile con il nome del servizio
+      - MONGO_ADDRESS=mongodb 
+      - MONGO_PORT=27017
+    depends_on:
+      - mongodb
+
+# Qui in futuro aggiungerai gli altri servizi (chat, forum, ecc.)
+# quando avrai creato i loro Dockerfile.
+
+volumes:
+  mongo_data:
