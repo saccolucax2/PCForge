@@ -1,30 +1,98 @@
-version: '3.8'
-
 services:
-  # Il database MongoDB per i microservizi
+  # ------------------------------------
+  # 1. DATABASE
+  # ------------------------------------
+  
   mongodb:
     image: mongo:latest
-    container_name: mongodb
+    container_name: pcforge-mongo
+    restart: always
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
 
-  # Il tuo Gateway principale
+  mysql:
+    image: mysql:8.0
+    container_name: pcforge-mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root 
+      MYSQL_DATABASE: pcforge
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # ------------------------------------
+  # 2. MICROSERVIZI
+  # ------------------------------------
+
   gateway:
-    build: ./gateway  # Cerca il Dockerfile nella cartella gateway
+    build: ./gateway
     container_name: gateway
     ports:
       - "8086:8086"
     environment:
-      # Sovrascriviamo l'IP fisso che avevi nel Dockerfile con il nome del servizio
-      - MONGO_ADDRESS=mongodb 
+      - MONGO_ADDRESS=mongodb
       - MONGO_PORT=27017
     depends_on:
       - mongodb
+      - authorization
+      - chat
+      - forum
 
-# Qui in futuro aggiungerai gli altri servizi (chat, forum, ecc.)
-# quando avrai creato i loro Dockerfile.
+  authorization:
+    build: ./authorization
+    container_name: authorization
+    ports:
+      - "8081:8081"
+    environment:
+      - MONGO_ADDRESS=mongodb
+    depends_on:
+      - mongodb
+
+  saldotecnico:
+    build: ./saldotecnico
+    container_name: saldotecnico
+    ports:
+      - "8082:8082"
+    environment:
+      - MONGO_ADDRESS=mongodb
+    depends_on:
+      - mongodb
+
+  buildgenerator:
+    build: ./buildgenerator
+    container_name: buildgenerator
+    ports:
+      - "8083:8083"
+    environment:
+      - MYSQL_ADDRESS=mysql
+      - MYSQL_PORT=3306
+    depends_on:
+      - mysql
+
+  chat:
+    build: ./chat
+    container_name: chat
+    ports:
+      - "8084:8084"
+    environment:
+      - MONGO_ADDRESS=mongodb
+    depends_on:
+      - mongodb
+
+  forum:
+    build: ./forum
+    container_name: forum
+    ports:
+      - "8085:8085"
+    environment:
+      - MONGO_ADDRESS=mongodb
+    depends_on:
+      - mongodb
 
 volumes:
   mongo_data:
+  mysql_data:

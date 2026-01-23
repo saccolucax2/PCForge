@@ -13,4 +13,4 @@ RUN mvn clean package
 
 EXPOSE 8084
 
-CMD ["java", "-jar", "target/authorization-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/chat-0.0.1-SNAPSHOT.jar"]

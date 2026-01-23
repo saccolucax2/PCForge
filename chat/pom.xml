@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>it.unisannio</groupId>
-    <artifactId>authorization</artifactId>
+    <artifactId>chat</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>authorization</name>
-    <description>authorization</description>
+    <name>chat</name>
+    <description>chat</description>
     <url/>
     <licenses>
         <license/>
