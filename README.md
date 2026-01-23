@@ -51,7 +51,7 @@ it.unisannio.pcforge
    |     |-- persistence
    |            |-- mapper
    |
-   |-- saldopunti
+   |-- reviews
    |      |-- controller
    |      |-- service
    |      |-- persistence
@@ -81,7 +81,7 @@ Questo approccio migliora manutenibilità, testabilità e permette deploy indipe
 - **BuildGenerator / BuildComparator** — generazione e confronto delle build (unificati per evitare duplicazioni).
 - **Chat** — messaggistica tra utenti e tecnici (storico, timestamp, gestione conversazioni).
 - **Forum** — post, commenti e discussioni su build e componenti.
-- **SaldoPunti** — gestione punti/crediti per tecnici e sistema di transazioni.
+- **Reviews** — gestione punti/crediti per tecnici, con recensioni e sistema di transazioni.
 
 ---
 ## 🔩 BuildGenerator & Pattern Composite
