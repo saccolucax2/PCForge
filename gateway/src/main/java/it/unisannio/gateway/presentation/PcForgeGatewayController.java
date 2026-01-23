@@ -38,7 +38,7 @@ public class PcForgeGatewayController {
     @Value("${buildgenerator.path}")
     private String buildServiceUrl;
 
-    @Value("${comment.path}") // esempio: http://comment-service:8082/comments
+    @Value("${comment.path}")
     private String commentServiceUrl;
 
     @Value("${post.path}")
@@ -851,7 +851,7 @@ public class PcForgeGatewayController {
     @Path("/technicians")
     public Response getAllTechnicians() {
         Client client = ClientBuilder.newClient();
-        Response remote = client.target(saldoTecnicoServiceUrl)
+        Response remote = client.target(reviewsServiceUrl)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
 
@@ -865,7 +865,7 @@ public class PcForgeGatewayController {
     @HasRole("TECHNICIAN")
     public Response getTechnicianByUserId(@PathParam("userId") String userId) {
         Client client = ClientBuilder.newClient();
-        Response remote = client.target(saldoTecnicoServiceUrl + "/" + userId)
+        Response remote = client.target(reviewsServiceUrl + "/" + userId)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
 
@@ -879,7 +879,7 @@ public class PcForgeGatewayController {
     @HasRole("TECHNICIAN")
     public Response createOrUpdateTechnician(JsonNode technicianProfile) {
         Client client = ClientBuilder.newClient();
-        Response remote = client.target(saldoTecnicoServiceUrl)
+        Response remote = client.target(reviewsServiceUrl)
                 .request(MediaType.APPLICATION_JSON)
                 .post(Entity.json(technicianProfile));
 
@@ -894,7 +894,7 @@ public class PcForgeGatewayController {
                               @QueryParam("amount") int amount,
                               @QueryParam("reason") String reason) {
         Client client = ClientBuilder.newClient();
-        Response remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/points/add")
+        Response remote = client.target(reviewsServiceUrl + "/" + userId + "/points/add")
                 .queryParam("amount", amount)
                 .queryParam("reason", reason)
                 .request(MediaType.APPLICATION_JSON)
@@ -911,8 +911,8 @@ public class PcForgeGatewayController {
                                            @QueryParam("amount") int amount,
                                            @QueryParam("reason") @DefaultValue("rating") String reason) {
         try (Client client = ClientBuilder.newClient()) {
-            // Costruisce la chiamata al microservizio SaldoTecnico
-            Response remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/rating/add")
+            // Costruisce la chiamata al microservizio reviews
+            Response remote = client.target(reviewsServiceUrl + "/" + userId + "/rating/add")
                     .queryParam("amount", amount)
                     .queryParam("reason", reason)
                     .request(MediaType.APPLICATION_JSON)
@@ -936,8 +936,8 @@ public class PcForgeGatewayController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRatingPointsGateway(@PathParam("userId") String userId) {
         try (Client client = ClientBuilder.newClient()) {
-            // Chiamata al microservizio SaldoTecnico
-            Response remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/rating")
+            // Chiamata al microservizio reviews
+            Response remote = client.target(reviewsServiceUrl + "/" + userId + "/rating")
                     .request(MediaType.APPLICATION_JSON)
                     .get();
 
@@ -961,7 +961,7 @@ public class PcForgeGatewayController {
                                 @QueryParam("amount") int amount,
                                 @QueryParam("reason") String reason) {
         Client client = ClientBuilder.newClient();
-        Response remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/points/spend")
+        Response remote = client.target(reviewsServiceUrl + "/" + userId + "/points/spend")
                 .queryParam("amount", amount)
                 .queryParam("reason", reason)
                 .request(MediaType.APPLICATION_JSON)
@@ -976,7 +976,7 @@ public class PcForgeGatewayController {
     @Path("/technicians/{userId}/deleteTechnician")
     public Response deleteTechnician(@PathParam("userId") String userId) {
         Client client = ClientBuilder.newClient();
-        Response remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/deleteTechnician")
+        Response remote = client.target(reviewsServiceUrl + "/" + userId + "/deleteTechnician")
                 .request(MediaType.APPLICATION_JSON)
                 .delete();
 
