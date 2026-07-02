@@ -18,7 +18,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(jsr250Enabled = true) // Abilita @RolesAllowed se vuoi usarlo in futuro
+@EnableMethodSecurity(jsr250Enabled = true)
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -36,21 +36,14 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ URL pubblici
                         .requestMatchers("/api/login/**", "/api/refresh", "/api", "/error").permitAll()
-                        .requestMatchers("/login.html","/register.html","/dashboard.html", "/pages/**", "/css/**", "/js/**","/img/**").permitAll()
+                        .requestMatchers("/","/index.html","/login.html","/register.html","/dashboard.html", "/pages/**", "/css/**", "/js/**","/img/**").permitAll()
                         .requestMatchers("/api/login/technicians","/api/login/technicians/**").hasRole("TECHNICIAN")
-
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        // ✅ Solo technician
                         .requestMatchers("/api/technician/**").hasRole("TECHNICIAN")
-
-                        // ✅ Tutto il resto richiede autenticazione
                         .anyRequest().authenticated()
                 )
 
-                // Filtra prima della gestione username/password
                 .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
