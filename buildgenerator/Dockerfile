@@ -1,6 +1,6 @@
 FROM maven:3.9.5-eclipse-temurin-21
 
-ENV MYSQL_ADDRESS=172.31.6.9
+ENV MYSQL_ADDRESS=mysql
 ENV MYSQL_PORT=3306
 
 RUN mkdir -p /source

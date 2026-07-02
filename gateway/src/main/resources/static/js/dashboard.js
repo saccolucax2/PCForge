@@ -8,7 +8,7 @@ function load(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)||
 //----------- FETCH USER PROFILE -----------
 async function fetchUserProfile(username) {
     try {
-        const res = await authFetch(`http://172.31.6.9:8086/api/login/${username}`);
+        const res = await authFetch(`/api/login/${username}`);
         if (!res.ok) throw new Error("Error getting user data.");
         return await res.json();
     } catch (err) {
@@ -126,45 +126,45 @@ async function loadPageFragment(page){
 
                 try {
                     // --- Cancella tutte le build ---
-                    const buildsRes = await authFetch(`http://172.31.6.9:8086/api/login/${currentUser.username}/builds`);
+                    const buildsRes = await authFetch(`/api/login/${currentUser.username}/builds`);
                     if (!buildsRes.ok) throw new Error("Error fetching user's builds");
                     const userBuilds = await buildsRes.json();
 
                     for (const buildId of userBuilds) {
-                        await authFetch(`http://172.31.6.9:8086/api/login/build/${buildId}`, { method: 'DELETE' });
+                        await authFetch(`/api/login/build/${buildId}`, { method: 'DELETE' });
                     }
 
                     // --- Cancella tutti i post e i loro likes/commenti ---
-                    const postsRes = await authFetch(`http://172.31.6.9:8086/api/login/posts/by/${currentUser.username}`);
+                    const postsRes = await authFetch(`/api/login/posts/by/${currentUser.username}`);
                     if (!postsRes.ok) throw new Error("Error fetching users's posts");
                     const userPosts = await postsRes.json();
 
                     for (const postId of userPosts) {
                         // Likes
-                        const likesRes = await authFetch(`http://172.31.6.9:8086/api/login/likes/POST/${postId}`, { method: 'GET' });
+                        const likesRes = await authFetch(`/api/login/likes/POST/${postId}`, { method: 'GET' });
                         if (likesRes.ok) {
                             const likes = await likesRes.json();
                             for (const like of likes) {
-                                await authFetch(`http://172.31.6.9:8086/api/login/likes/${like.id}`, { method: 'DELETE' });
+                                await authFetch(`/api/login/likes/${like.id}`, { method: 'DELETE' });
                             }
                         }
 
                         // Comments
-                        const commentRes = await authFetch(`http://172.31.6.9:8086/api/login/comments/POST/${postId}`, { method: 'GET' });
+                        const commentRes = await authFetch(`/api/login/comments/POST/${postId}`, { method: 'GET' });
                         if (commentRes.ok) {
                             const comments = await commentRes.json();
                             for (const comment of comments) {
-                                await authFetch(`http://172.31.6.9:8086/api/login/comments/${comment.id}`, { method: 'DELETE' });
+                                await authFetch(`/api/login/comments/${comment.id}`, { method: 'DELETE' });
                             }
                         }
 
                         // Cancella post
-                        await authFetch(`http://172.31.6.9:8086/api/login/posts/${postId}`, { method: 'DELETE' });
+                        await authFetch(`/api/login/posts/${postId}`, { method: 'DELETE' });
                     }
 
                     // --- Cancella tutte le conversazioni e messaggi ---
                     try {
-                        const convRes = await authFetch(`http://172.31.6.9:8086/api/login/conversations/${currentUser.username}`);
+                        const convRes = await authFetch(`/api/login/conversations/${currentUser.username}`);
                         if (convRes.ok) {
                             const conversations = await convRes.json();
                             for (const conv of conversations) {
@@ -172,7 +172,7 @@ async function loadPageFragment(page){
                                 if (!convId) continue;
 
                                 // Cancella tutti i messaggi della conversazione (se necessario)
-                                const msgRes = await authFetch(`http://172.31.6.9:8086/api/login/messages/${convId}`);
+                                const msgRes = await authFetch(`/api/login/messages/${convId}`);
                                 if (msgRes.ok) {
                                     const messages = await msgRes.json();
                                     for (const msg of messages) {
@@ -182,7 +182,7 @@ async function loadPageFragment(page){
                                 }
 
                                 // Cancella la conversazione
-                                await authFetch(`http://172.31.6.9:8086/api/login/conversation/${convId}`, { method: 'DELETE' });
+                                await authFetch(`/api/login/conversation/${convId}`, { method: 'DELETE' });
                             }
                         }
                     } catch (err) {
@@ -191,13 +191,13 @@ async function loadPageFragment(page){
 
                     // --- Cancella profilo tecnico se esiste ---
                     try {
-                        await authFetch(`http://172.31.6.9:8086/api/login/technicians/${currentUser.username}/deleteTechnician`, { method: 'DELETE' });
+                        await authFetch(`/api/login/technicians/${currentUser.username}/deleteTechnician`, { method: 'DELETE' });
                     } catch (err) {
                         console.warn("User is not a technician or error deleting technician:", err);
                     }
 
                     // --- Cancella utente ---
-                    const delUserRes = await authFetch(`http://172.31.6.9:8086/api/login/${currentUser.username}`, { method: 'DELETE' });
+                    const delUserRes = await authFetch(`/api/login/${currentUser.username}`, { method: 'DELETE' });
                     if (!delUserRes.ok) throw new Error("Error deleting account");
 
                     // --- Pulizia locale ---
@@ -365,7 +365,7 @@ async function initProfile() {
             };
 
             try {
-                const res = await authFetch(`http://172.31.6.9:8086/api/login/${username}`, {
+                const res = await authFetch(`/api/login/${username}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatedUser)
@@ -438,7 +438,7 @@ async function initProfile() {
             };
 
             // 🔹 PUT al backend
-            const res = await authFetch(`http://172.31.6.9:8086/api/login/${currentUser.username}`, {
+            const res = await authFetch(`/api/login/${currentUser.username}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(userPayload)
@@ -511,7 +511,7 @@ async function initProfileTech() {
     // Fetch dati tecnico dal backend
     let techData = null;
     try {
-        const res = await authFetch(`http://172.31.6.9:8086/api/login/technicians/${username}`);
+        const res = await authFetch(`/api/login/technicians/${username}`);
         if (res && res.ok) techData = await res.json();
     } catch (err) {
         console.error("Error fetching technician data:", err);
@@ -522,7 +522,7 @@ async function initProfileTech() {
 
     // --- Recupera e mostra rating medio del tecnico ---
     try {
-        const ratingRes = await authFetch(`http://172.31.6.9:8086/api/login/technicians/${username}/rating`);
+        const ratingRes = await authFetch(`/api/login/technicians/${username}/rating`);
         if (ratingRes.ok) {
             const data = await ratingRes.json();
             const rating = data.ratingPoints || 0;
@@ -647,7 +647,7 @@ function attachTechListeners() {
             transactions: []
         };
         try {
-            const res = await authFetch(`http://172.31.6.9:8086/api/login/technicians`, {
+            const res = await authFetch(`/api/login/technicians`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(technicianProfile)
@@ -727,7 +727,7 @@ async function refreshTechData() {
     if (!username) return;
 
     try {
-        const res = await authFetch(`http://172.31.6.9:8086/api/login/technicians/${username}`);
+        const res = await authFetch(`/api/login/technicians/${username}`);
         if (!res.ok) throw new Error('Failed to fetch technician data');
         const techData = await res.json();
 
@@ -1228,7 +1228,7 @@ async function initForum() {
     // === CARICA POST DAL BACKEND ===
     let posts = [];
     try {
-        const res = await authFetch(`http://172.31.6.9:8086/api/login/posts`);
+        const res = await authFetch(`/api/login/posts`);
         if (res.ok) {
             const data = await res.json();
             posts = await Promise.all(
@@ -1280,7 +1280,7 @@ async function initForum() {
             const newPost = { authorId, title, content };
 
             try {
-                const res = await authFetch(`http://172.31.6.9:8086/api/login/posts`, {
+                const res = await authFetch(`/api/login/posts`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newPost)
@@ -1371,7 +1371,7 @@ async function initForum() {
             };
 
             try {
-                const res = await authFetch(`http://172.31.6.9:8086/api/login/comments`, {
+                const res = await authFetch(`/api/login/comments`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(comment)
@@ -1400,7 +1400,7 @@ async function initForum() {
     // === FUNZIONI BACKEND ===
     async function fetchLikes(targetType, targetId) {
         try {
-            const res = await authFetch(`http://172.31.6.9:8086/api/login/likes/${targetType}/${targetId}`);
+            const res = await authFetch(`/api/login/likes/${targetType}/${targetId}`);
             if (res.ok) return await res.json();
         } catch (err) {
             console.warn("Error fetching Likes:", err);
@@ -1410,7 +1410,7 @@ async function initForum() {
 
     async function createLike(userId, targetType, targetId) {
         const like = { userId, targetType, targetId, createdAt: new Date().toISOString() };
-        const res = await authFetch(`http://172.31.6.9:8086/api/login/likes`, {
+        const res = await authFetch(`/api/login/likes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(like)
@@ -1420,13 +1420,13 @@ async function initForum() {
     }
 
     async function deleteLike(id) {
-        const res = await authFetch(`http://172.31.6.9:8086/api/login/likes/${id}`, { method: 'DELETE' });
+        const res = await authFetch(`/api/login/likes/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error("Error deleting likes");
     }
 
     async function fetchComments(targetType, targetId) {
         try {
-            const res = await authFetch(`http://172.31.6.9:8086/api/login/comments/${targetType}/${targetId}`);
+            const res = await authFetch(`/api/login/comments/${targetType}/${targetId}`);
             if (res.ok) return await res.json();
         } catch (err) {
             console.warn("Error fetching Comments:", err);

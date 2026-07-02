@@ -96,7 +96,7 @@
             if (!refreshToken) return;
 
             try {
-                const response = await fetch("http://172.31.6.9:8086/api/refresh", {
+                const response = await fetch("/api/refresh", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

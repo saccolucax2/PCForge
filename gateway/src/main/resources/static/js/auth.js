@@ -1,4 +1,4 @@
-const API_URL = "http://172.31.6.9:8086/api/login";
+const API_URL = "/api/login";
 const Auth = {
     /**
      * Esegue il login e restituisce i token JWT
