@@ -1,21 +1,23 @@
 package it.unisannio.authorization.persistence.mapper;
 
-import it.unisannio.authorization.data.Roles;
-import it.unisannio.authorization.data.User;
-import org.bson.Document;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.bson.Document;
+import org.junit.jupiter.api.Test;
+
+import it.unisannio.authorization.data.Roles;
+import it.unisannio.authorization.data.User;
 
 class MapperTest {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    @SuppressWarnings("unchecked")
     @Test
     void testUserToDocumentMapper() {
         LocalDate birthDate = LocalDate.of(1995, 3, 21);

@@ -1,10 +1,10 @@
 package it.unisannio.forum.persistence.mapper;
 
-import it.unisannio.forum.model.Comment;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-
 import java.util.function.Function;
+
+import org.bson.Document;
+
+import it.unisannio.forum.model.Comment;
 
 public class DocumentToCommentMapper implements Function<Document, Comment> {
 

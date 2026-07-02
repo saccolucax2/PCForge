@@ -1,18 +1,20 @@
 package it.unisannio.authorization.application;
 
-import it.unisannio.authorization.data.Roles;
-import it.unisannio.authorization.data.User;
-import it.unisannio.authorization.persistence.UserRepository;
-import it.unisannio.authorization.persistence.UserRepositoryMongo;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.time.LocalDate;
-import java.time.Period;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import it.unisannio.authorization.data.Roles;
+import it.unisannio.authorization.data.User;
+import it.unisannio.authorization.persistence.UserRepository;
+import it.unisannio.authorization.persistence.UserRepositoryMongo;
 
 @Service
 public class UserService {
@@ -120,6 +122,7 @@ public class UserService {
         return encoder.matches(rawPassword, user.getPassword());
     }
 
+    @SuppressWarnings("null")
     public List<String> getUserRolesAsString(String username) {
         User user = userRepository.findUser(username);
         return user.getRoles().stream().map(Enum::name).collect(Collectors.toList());

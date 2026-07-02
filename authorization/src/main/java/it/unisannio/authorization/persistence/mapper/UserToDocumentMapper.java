@@ -1,8 +1,5 @@
 package it.unisannio.authorization.persistence.mapper;
 
-import it.unisannio.authorization.data.User;
-import it.unisannio.authorization.persistence.UserRepository;
-import org.bson.Document;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +7,17 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.bson.Document;
+
+import it.unisannio.authorization.data.User;
+import it.unisannio.authorization.persistence.UserRepository;
 import static it.unisannio.authorization.persistence.UserRepository.BUILDS;
 
 public class UserToDocumentMapper implements Function<User, Document> {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    @SuppressWarnings("null")
     @Override
     public Document apply(User user) {
         // Mappatura dei ruoli

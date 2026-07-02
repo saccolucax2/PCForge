@@ -1,8 +1,5 @@
 package it.unisannio.chat.persistence.mapper;
 
-import it.unisannio.chat.data.Conversation;
-import org.bson.Document;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -11,8 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.bson.Document;
+
+import it.unisannio.chat.data.Conversation;
+
 public class DocumentToConversationMapper implements Function<Document, Conversation> {
 
+    @SuppressWarnings("unchecked")
     @Override
     public Conversation apply(Document doc) {
         Conversation conversation = new Conversation();

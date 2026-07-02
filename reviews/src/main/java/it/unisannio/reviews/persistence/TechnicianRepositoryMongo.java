@@ -1,17 +1,23 @@
 package it.unisannio.reviews.persistence;
 
-import com.mongodb.client.model.ReplaceOptions;
-import it.unisannio.reviews.exception.TechnicianNotFoundException;
-import it.unisannio.reviews.model.PointTransaction;
-import it.unisannio.reviews.model.TechnicianProfile;
-import it.unisannio.reviews.persistence.mapper.*;
-import com.mongodb.client.*;
-import org.bson.Document;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+
+import org.bson.Document;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
 import static com.mongodb.client.model.Filters.eq;
+import com.mongodb.client.model.ReplaceOptions;
+
+import it.unisannio.reviews.exception.TechnicianNotFoundException;
+import it.unisannio.reviews.model.PointTransaction;
+import it.unisannio.reviews.model.TechnicianProfile;
+import it.unisannio.reviews.persistence.mapper.DocumentToTechnicianMapper;
+import it.unisannio.reviews.persistence.mapper.TechnicianToDocumentMapper;
 
 public class TechnicianRepositoryMongo implements TechnicianRepository {
 
@@ -98,6 +104,7 @@ public class TechnicianRepositoryMongo implements TechnicianRepository {
         return createOrUpdateProfile(profile);
     }
 
+    @SuppressWarnings("unused")
     @Override
     public void deleteByUserId(String userId) {
         long deletedCount = getCollection().deleteOne(eq("userId", userId)).getDeletedCount();

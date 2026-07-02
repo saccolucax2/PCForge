@@ -1,18 +1,25 @@
 package it.unisannio.reviews.persistence.mapper;
 
 
-import it.unisannio.reviews.model.PointTransaction;
-import it.unisannio.reviews.model.TechnicianProfile;
-import org.bson.Document;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static it.unisannio.reviews.persistence.TechnicianRepository.*;
+import org.bson.Document;
+
+import it.unisannio.reviews.model.PointTransaction;
+import it.unisannio.reviews.model.TechnicianProfile;
+import static it.unisannio.reviews.persistence.TechnicianRepository.BIO;
+import static it.unisannio.reviews.persistence.TechnicianRepository.CERTIFICATIONS;
+import static it.unisannio.reviews.persistence.TechnicianRepository.PHOTOURL;
+import static it.unisannio.reviews.persistence.TechnicianRepository.POINTBALANCE;
+import static it.unisannio.reviews.persistence.TechnicianRepository.SKILLS;
+import static it.unisannio.reviews.persistence.TechnicianRepository.TRANSACTIONS;
+import static it.unisannio.reviews.persistence.TechnicianRepository.USERID;
 
 public class DocumentToTechnicianMapper implements Function<Document, TechnicianProfile> {
+    @SuppressWarnings("unchecked")
     @Override
     public TechnicianProfile apply(Document doc) {
         TechnicianProfile profile = new TechnicianProfile();
@@ -33,10 +40,11 @@ public class DocumentToTechnicianMapper implements Function<Document, Technician
 
             // Converte java.util.Date -> Instant
             Object dateObj = d.get("createdAt");
-            if(dateObj instanceof java.util.Date) {
-                t.setCreatedAt(((java.util.Date) dateObj).toInstant());
-            } else if(dateObj instanceof Instant) {
-                t.setCreatedAt((Instant) dateObj);
+            switch (dateObj) {
+                case java.util.Date date -> t.setCreatedAt(date.toInstant());
+                case Instant instant -> t.setCreatedAt(instant);
+                default -> {
+                }
             }
 
             txs.add(t);

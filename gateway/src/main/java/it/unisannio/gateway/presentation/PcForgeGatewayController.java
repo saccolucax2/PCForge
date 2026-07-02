@@ -1,27 +1,42 @@
 package it.unisannio.gateway.presentation;
 
-import it.unisannio.gateway.security.HasRole;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import it.unisannio.gateway.security.HasRole;
 import it.unisannio.gateway.security.JwtTokenProvider;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import static jakarta.ws.rs.client.ClientBuilder.newClient;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Component;
-import java.util.*;
-import static jakarta.ws.rs.client.ClientBuilder.newClient;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import java.util.stream.Collectors;
 
 @Component
 @Produces(MediaType.APPLICATION_JSON)
@@ -67,7 +82,8 @@ public class PcForgeGatewayController {
                 .post(Entity.entity(user, MediaType.APPLICATION_JSON));
     }
 
-    @POST
+    @SuppressWarnings("unused")
+@POST
     public Response login(JsonNode credentials) {
         try {
             String username = credentials.get("username").asText();
@@ -117,13 +133,14 @@ public class PcForgeGatewayController {
                     .header("Authorization", "Bearer " + accessToken)
                     .build();
 
-        } catch (Exception e) {
+        } catch (JsonProcessingException | IllegalArgumentException e) {
             return Response.status(500)
                     .entity("{\"message\": \"Error logging in: " + e.getMessage() + "\"}")
                     .build();
         }
     }
 
+    @SuppressWarnings("null")
     @POST
     @Path("/refresh")
     public Response refreshToken(JsonNode body) {
@@ -161,7 +178,7 @@ public class PcForgeGatewayController {
                     .header("Authorization", "Bearer " + newAccessToken)
                     .build();
 
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             return Response.status(500)
                     .entity("{\"message\": \"Error refreshing token: " + e.getMessage() + "\"}")
                     .build();
@@ -180,7 +197,6 @@ public class PcForgeGatewayController {
 
             return Response.ok(responseBody).build();
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.serverError()
                     .entity("{\"message\": \"Error calling APIs: " + e.getMessage() + "\"}")
                     .build();
@@ -293,7 +309,6 @@ public class PcForgeGatewayController {
                     .build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.serverError()
                     .entity("Error updating user: " + e.getMessage())
                     .build();
@@ -349,48 +364,56 @@ public class PcForgeGatewayController {
             newPayload.put("user2Id", payload.get("participants").get(1).asText());
         }
 
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(chatServiceUrl + "/conversation")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(newPayload.toString()));
-        String body = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String body;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(chatServiceUrl + "/conversation")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(newPayload.toString()));
+            body = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(body).build();
     }
 
     @GET
     @Path("/conversations/{userId}")
     public Response getUserConversations(@PathParam("userId") String userId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(chatServiceUrl + "/conversations/" + userId)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-        String body = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String body;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(chatServiceUrl + "/conversations/" + userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            body = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(body).build();
     }
 
     @GET
     @Path("/messages/{conversationId}")
     public Response getConversationMessages(@PathParam("conversationId") String conversationId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(chatServiceUrl + "/messages/" + conversationId)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-        String body = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String body;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(chatServiceUrl + "/messages/" + conversationId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            body = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(body).build();
     }
 
     @POST
     @Path("/message")
     public Response sendMessage(JsonNode payload) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(chatServiceUrl + "/message")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(payload.toString()));
-        String body = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String body;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(chatServiceUrl + "/message")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(payload.toString()));
+            body = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(body).build();
     }
 
@@ -398,12 +421,14 @@ public class PcForgeGatewayController {
     @Path("/conversation/{conversationId}/read/{userId}")
     public Response markAsRead(@PathParam("conversationId") String conversationId,
                                @PathParam("userId") String userId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(chatServiceUrl + "/conversation/" + conversationId + "/read/" + userId)
-                .request(MediaType.APPLICATION_JSON)
-                .put(Entity.json("{}"));
-        String body = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String body;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(chatServiceUrl + "/conversation/" + conversationId + "/read/" + userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .put(Entity.json("{}"));
+            body = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(body).build();
     }
 
@@ -411,12 +436,14 @@ public class PcForgeGatewayController {
     @Path("/conversation/{conversationId}/unread/{userId}")
     public Response countUnread(@PathParam("conversationId") String conversationId,
                                 @PathParam("userId") String userId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(chatServiceUrl + "/conversation/" + conversationId + "/unread/" + userId)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-        String body = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String body;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(chatServiceUrl + "/conversation/" + conversationId + "/unread/" + userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            body = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(body).build();
     }
 
@@ -441,12 +468,14 @@ public class PcForgeGatewayController {
     @DELETE
     @Path("/conversation/{conversationId}")
     public Response deleteConversation(@PathParam("conversationId") String conversationId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(chatServiceUrl + "/conversation/" + conversationId)
-                .request(MediaType.APPLICATION_JSON)
-                .delete();
-        String body = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String body;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(chatServiceUrl + "/conversation/" + conversationId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .delete();
+            body = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(body).build();
     }
 
@@ -455,13 +484,14 @@ public class PcForgeGatewayController {
     @POST
     @Path("/build/create")
     public Response createBuild(JsonNode build) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(buildServiceUrl + "/create")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(build));
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/create")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(build));
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -474,14 +504,15 @@ public class PcForgeGatewayController {
     @Produces(MediaType.APPLICATION_JSON)
     //
     public Response createComponent(JsonNode component) {
-        Client client = ClientBuilder.newClient();
-        System.out.println(buildServiceUrl + "/component");
-        Response remote = client.target(buildServiceUrl + "/component")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(component));  // Invia il JsonNode direttamente
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            System.out.println(buildServiceUrl + "/component");
+            remote = client.target(buildServiceUrl + "/component")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(component)); // Invia il JsonNode direttamente
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -491,13 +522,14 @@ public class PcForgeGatewayController {
     @POST
     @Path("/build/{id}/add")
     public Response addComponent(@PathParam("id") Long id, JsonNode part) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(buildServiceUrl + "/" + id + "/add")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(part));
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/" + id + "/add")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(part));
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -507,13 +539,14 @@ public class PcForgeGatewayController {
     @GET
     @Path("/build/{id}")
     public Response getBuild(@PathParam("id") Long id) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(buildServiceUrl + "/" + id)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/" + id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -523,15 +556,16 @@ public class PcForgeGatewayController {
     @GET
     @Path("/build/compare")
     public Response compareBuilds(@QueryParam("id1") Long id1, @QueryParam("id2") Long id2) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(buildServiceUrl + "/compare")
-                .queryParam("id1", id1)
-                .queryParam("id2", id2)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/compare")
+                    .queryParam("id1", id1)
+                    .queryParam("id2", id2)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -542,16 +576,16 @@ public class PcForgeGatewayController {
     @Path("/build/component/compare")
     @Produces(MediaType.APPLICATION_JSON)
     public Response compareComponents(@QueryParam("id1") Long id1, @QueryParam("id2") Long id2) {
-        Client client = ClientBuilder.newClient();
-
-        Response remote = client.target(buildServiceUrl + "/component/compare")
-                .queryParam("id1", id1)
-                .queryParam("id2", id2)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/component/compare")
+                    .queryParam("id1", id1)
+                    .queryParam("id2", id2)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -590,13 +624,14 @@ public class PcForgeGatewayController {
     @PUT
     @Path("/build/{id}")
     public Response updateBuild(@PathParam("id") Long id, JsonNode build) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(buildServiceUrl + "/" + id)
-                .request(MediaType.APPLICATION_JSON)
-                .put(Entity.json(build));
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/" + id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .put(Entity.json(build));
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -606,13 +641,14 @@ public class PcForgeGatewayController {
     @DELETE
     @Path("/build/{id}")
     public Response deleteBuild(@PathParam("id") Long id) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(buildServiceUrl + "/" + id)
-                .request(MediaType.APPLICATION_JSON)
-                .delete();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/" + id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .delete();
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -622,13 +658,14 @@ public class PcForgeGatewayController {
     @DELETE
     @Path("/build/component/{id}")
     public Response deleteComponent(@PathParam("id") Long id) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(buildServiceUrl + "/component/" + id)
-                .request(MediaType.APPLICATION_JSON)
-                .delete();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/component/" + id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .delete();
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -638,15 +675,16 @@ public class PcForgeGatewayController {
     @GET
     @Path("/build/components")
     public Response getComponentsBySpecification(@QueryParam("column") String column, @QueryParam("value") String value) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(buildServiceUrl + "/components")
-                .queryParam("column", column)
-                .queryParam("value", value)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/components")
+                    .queryParam("column", column)
+                    .queryParam("value", value)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -656,15 +694,16 @@ public class PcForgeGatewayController {
     @GET
     @Path("/build/by-spec")
     public Response getBuildsBySpecification(@QueryParam("column") String column, @QueryParam("value") String value) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(buildServiceUrl + "/by-spec")
-                .queryParam("column", column)
-                .queryParam("value", value)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(buildServiceUrl + "/by-spec")
+                    .queryParam("column", column)
+                    .queryParam("value", value)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus())
                 .entity(responseBody)
@@ -676,13 +715,14 @@ public class PcForgeGatewayController {
     @POST
     @Path("/comments")
     public Response createComment(JsonNode comment) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(commentServiceUrl)
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(comment));
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(commentServiceUrl)
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(comment));
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -690,39 +730,42 @@ public class PcForgeGatewayController {
     @Path("/comments/{targetType}/{targetId}")
     public Response getComments(@PathParam("targetType") String targetType,
                                 @PathParam("targetId") String targetId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(commentServiceUrl + "/" + targetType + "/" + targetId)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(commentServiceUrl + "/" + targetType + "/" + targetId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
     @POST
     @Path("/comments/{id}/reply")
     public Response replyToComment(@PathParam("id") String parentId, JsonNode reply) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(commentServiceUrl + "/" + parentId + "/reply")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(reply));
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(commentServiceUrl + "/" + parentId + "/reply")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(reply));
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
     @DELETE
     @Path("/comments/{id}")
     public Response deleteComment(@PathParam("id") String id) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(commentServiceUrl + "/" + id)
-                .request(MediaType.APPLICATION_JSON)
-                .delete();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(commentServiceUrl + "/" + id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .delete();
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -731,39 +774,42 @@ public class PcForgeGatewayController {
     @POST
     @Path("/posts")
     public Response createPost(JsonNode post) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(postServiceUrl)
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(post));
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(postServiceUrl)
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(post));
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
     @GET
     @Path("/posts/{id}")
     public Response getPost(@PathParam("id") String id) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(postServiceUrl + "/" + id)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(postServiceUrl + "/" + id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
     @GET
     @Path("/posts/by/{userId}")
     public Response getPostsByUser(@PathParam("userId") String userId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(postServiceUrl + "/by/" + userId)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(postServiceUrl + "/by/" + userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
@@ -771,26 +817,28 @@ public class PcForgeGatewayController {
     @GET
     @Path("/posts")
     public Response getAllPosts() {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(postServiceUrl)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(postServiceUrl)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
     @DELETE
     @Path("/posts/{id}")
     public Response deletePost(@PathParam("id") String id) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(postServiceUrl + "/" + id)
-                .request(MediaType.APPLICATION_JSON)
-                .delete();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(postServiceUrl + "/" + id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .delete();
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -802,13 +850,14 @@ public class PcForgeGatewayController {
     @POST
     @Path("/likes")
     public Response createLike(JsonNode like) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(likeServiceUrl)
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(like));
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(likeServiceUrl)
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(like));
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -818,13 +867,14 @@ public class PcForgeGatewayController {
     @DELETE
     @Path("/likes/{id}")
     public Response deleteLike(@PathParam("id") String id) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(likeServiceUrl + "/" + id)
-                .request(MediaType.APPLICATION_JSON)
-                .delete();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(likeServiceUrl + "/" + id)
+                    .request(MediaType.APPLICATION_JSON)
+                    .delete();
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -835,13 +885,14 @@ public class PcForgeGatewayController {
     @Path("/likes/{targetType}/{targetId}")
     public Response getLikes(@PathParam("targetType") String targetType,
                              @PathParam("targetId") String targetId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(likeServiceUrl + "/" + targetType + "/" + targetId)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(likeServiceUrl + "/" + targetType + "/" + targetId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -850,13 +901,14 @@ public class PcForgeGatewayController {
     @GET
     @Path("/technicians")
     public Response getAllTechnicians() {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(reviewsServiceUrl)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(saldoTecnicoServiceUrl)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -864,13 +916,14 @@ public class PcForgeGatewayController {
     @Path("/technicians/{userId}")
     @HasRole("TECHNICIAN")
     public Response getTechnicianByUserId(@PathParam("userId") String userId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(reviewsServiceUrl + "/" + userId)
-                .request(MediaType.APPLICATION_JSON)
-                .get();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(saldoTecnicoServiceUrl + "/" + userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get();
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -878,13 +931,14 @@ public class PcForgeGatewayController {
     @Path("/technicians")
     @HasRole("TECHNICIAN")
     public Response createOrUpdateTechnician(JsonNode technicianProfile) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(reviewsServiceUrl)
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.json(technicianProfile));
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(saldoTecnicoServiceUrl)
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.json(technicianProfile));
+            responseBody = remote.readEntity(String.class);
+        }
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -893,15 +947,16 @@ public class PcForgeGatewayController {
     public Response addPoints(@PathParam("userId") String userId,
                               @QueryParam("amount") int amount,
                               @QueryParam("reason") String reason) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(reviewsServiceUrl + "/" + userId + "/points/add")
-                .queryParam("amount", amount)
-                .queryParam("reason", reason)
-                .request(MediaType.APPLICATION_JSON)
-                .post(null); // Nessun corpo richiesto
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/points/add")
+                    .queryParam("amount", amount)
+                    .queryParam("reason", reason)
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(null); // Nessun corpo richiesto
+            responseBody = remote.readEntity(String.class);
+        } // Nessun corpo richiesto
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
@@ -912,7 +967,7 @@ public class PcForgeGatewayController {
                                            @QueryParam("reason") @DefaultValue("rating") String reason) {
         try (Client client = ClientBuilder.newClient()) {
             // Costruisce la chiamata al microservizio reviews
-            Response remote = client.target(reviewsServiceUrl + "/" + userId + "/rating/add")
+            Response remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/rating/add")
                     .queryParam("amount", amount)
                     .queryParam("reason", reason)
                     .request(MediaType.APPLICATION_JSON)
@@ -924,7 +979,6 @@ public class PcForgeGatewayController {
             // Restituisce lo stesso status code e corpo al client
             return Response.status(remote.getStatus()).entity(responseBody).build();
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("{\"error\": \"Error assigning review.\"}")
                     .build();
@@ -937,7 +991,7 @@ public class PcForgeGatewayController {
     public Response getRatingPointsGateway(@PathParam("userId") String userId) {
         try (Client client = ClientBuilder.newClient()) {
             // Chiamata al microservizio reviews
-            Response remote = client.target(reviewsServiceUrl + "/" + userId + "/rating")
+            Response remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/rating")
                     .request(MediaType.APPLICATION_JSON)
                     .get();
 
@@ -948,7 +1002,6 @@ public class PcForgeGatewayController {
             return Response.status(remote.getStatus()).entity(responseBody).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("{\"error\": \"Error fetching rating.\"}")
                     .build();
@@ -960,28 +1013,30 @@ public class PcForgeGatewayController {
     public Response spendPoints(@PathParam("userId") String userId,
                                 @QueryParam("amount") int amount,
                                 @QueryParam("reason") String reason) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(reviewsServiceUrl + "/" + userId + "/points/spend")
-                .queryParam("amount", amount)
-                .queryParam("reason", reason)
-                .request(MediaType.APPLICATION_JSON)
-                .post(null); // Nessun corpo richiesto
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/points/spend")
+                    .queryParam("amount", amount)
+                    .queryParam("reason", reason)
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(null); // Nessun corpo richiesto
+            responseBody = remote.readEntity(String.class);
+        } // Nessun corpo richiesto
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }
 
     @DELETE
     @Path("/technicians/{userId}/deleteTechnician")
     public Response deleteTechnician(@PathParam("userId") String userId) {
-        Client client = ClientBuilder.newClient();
-        Response remote = client.target(reviewsServiceUrl + "/" + userId + "/deleteTechnician")
-                .request(MediaType.APPLICATION_JSON)
-                .delete();
-
-        String responseBody = remote.readEntity(String.class);
-        client.close();
+        Response remote;
+        String responseBody;
+        try (Client client = ClientBuilder.newClient()) {
+            remote = client.target(saldoTecnicoServiceUrl + "/" + userId + "/deleteTechnician")
+                    .request(MediaType.APPLICATION_JSON)
+                    .delete();
+            responseBody = remote.readEntity(String.class);
+        }
 
         return Response.status(remote.getStatus()).entity(responseBody).build();
     }

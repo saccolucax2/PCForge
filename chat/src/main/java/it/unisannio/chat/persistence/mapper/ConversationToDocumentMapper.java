@@ -1,15 +1,15 @@
 package it.unisannio.chat.persistence.mapper;
 
-import it.unisannio.chat.data.Conversation;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.bson.Document;
+import org.bson.types.ObjectId;
+
+import it.unisannio.chat.data.Conversation;
 
 public class ConversationToDocumentMapper implements Function<Conversation, Document> {
 

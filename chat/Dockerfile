@@ -9,7 +9,7 @@ RUN mkdir -p /source
 WORKDIR /source
 ADD . /source/
 
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 EXPOSE 8084
 

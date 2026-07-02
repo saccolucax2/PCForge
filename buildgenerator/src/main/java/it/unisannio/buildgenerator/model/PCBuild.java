@@ -1,9 +1,16 @@
 package it.unisannio.buildgenerator.model;
 
-import jakarta.persistence.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class PCBuild {
@@ -26,10 +33,12 @@ public class PCBuild {
         this.components = components;
     }
 
+    @SuppressWarnings("null")
     public float getTotalPrice() {
         return (float) components.stream().mapToDouble(Part::getPrice).sum();
     }
 
+    @SuppressWarnings("null")
     public float getTotalPerformance() {
         return (float) components.stream().mapToDouble(Part::getPerformance).sum();
     }
@@ -73,7 +82,7 @@ public class PCBuild {
                     int priceCompare = Float.compare(p1.getPrice(), p2.getPrice());
                     if (priceCompare < 0) sb.append("💰 ").append(p1.getModel()).append(" is cheaper.\n");
                     else if (priceCompare > 0) sb.append("💰 ").append(p2.getModel()).append(" is cheaper.\n");
-                } catch (Exception e) {
+                } catch (IllegalAccessException | SecurityException | InvocationTargetException e) {
                     sb.append("⚙️ ").append((p1.getClass().getSimpleName()).toUpperCase()).append(":")
                             .append(" ").append(p1.getModel())
                             .append(": error comparing\n");

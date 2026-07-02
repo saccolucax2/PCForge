@@ -1,11 +1,19 @@
 package it.unisannio.buildgenerator.application;
 
-import it.unisannio.buildgenerator.model.*;
-import it.unisannio.buildgenerator.persistence.*;
-import org.springframework.stereotype.Service;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import it.unisannio.buildgenerator.model.PCBuild;
+import it.unisannio.buildgenerator.model.Part;
+import it.unisannio.buildgenerator.persistence.PCBuildRepository;
 
 @Service
 public class PCBuildService {
@@ -81,6 +89,7 @@ public class PCBuildService {
         return repository.getPCBuild(id);
     }
 
+    @SuppressWarnings("null")
     public PCBuild generateOptimizedBuildByBudget(float budget) {
         if (budget <= 0)
             throw new RuntimeException("Invalid budget: " + budget + "<0");
@@ -240,7 +249,7 @@ public class PCBuildService {
             }
 
             return sb.toString();
-        } catch (Exception e) {
+        } catch (IllegalAccessException | SecurityException | InvocationTargetException e) {
             throw new RuntimeException("Error during comparison", e);
         }
     }
